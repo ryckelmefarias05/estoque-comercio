@@ -1,12 +1,11 @@
-# Adega Estoque
+# VINTRA - CONTROLE DE ESTOQUE
 
 Sistema web para controle operacional de estoque.
 
 ## Objetivo
 
-Auxiliar a operação diária do estoque da Adega, permitindo:
+Auxiliar a operação diária do estoque do comércio, permitindo:
 
-- Controle de quantidade
 - Inventário
 - Conferência de recebimento
 - Importação de NF-e via XML
