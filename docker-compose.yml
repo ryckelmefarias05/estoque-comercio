@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: adega-estoque-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: adega_estoque
+      POSTGRES_USER: adega
+      POSTGRES_PASSWORD: adega_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
