@@ -1,16 +1,19 @@
 services:
   postgres:
     image: postgres:17
-    container_name: adega-estoque-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: adega_estoque
       POSTGRES_USER: adega
-      POSTGRES_PASSWORD: adega_dev
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?Configure DATABASE_PASSWORD}
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adega -d adega_estoque"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 volumes:
   postgres_data:
