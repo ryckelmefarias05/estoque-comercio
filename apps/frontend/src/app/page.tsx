@@ -9,9 +9,9 @@ type Tab = "overview" | "products" | "counts" | "imports";
 
 async function api(path: string, method = "GET", body?: unknown) {
   const response = await fetch(`/api/data/${path}`, { method, headers: { "content-type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
-  if (response.status === 401) throw new Error("Sessão encerrada. Entre novamente.");
   if (response.status === 204) return null;
   const data = await response.json();
+  if (response.status === 401) throw new Error(data.message || "Sessão encerrada. Entre novamente.");
   if (!response.ok) throw new Error(data.message || Object.values(data.fields || {}).join("; ") || "Operação não concluída");
   return data;
 }
