@@ -23,6 +23,12 @@ public class InventoryCountController {
         this.inventoryCountService = inventoryCountService;
     }
 
+    public record Assignment(@jakarta.validation.constraints.NotNull Long assignedUserId) {}
+    @PatchMapping("/{id}/assignment")
+    public InventoryCountResponse assign(@PathVariable Long id, @Valid @RequestBody Assignment request) {
+        return inventoryCountService.assign(id, request.assignedUserId());
+    }
+
     @PostMapping
     public ResponseEntity<InventoryCountResponse> create(
             @Valid @RequestBody InventoryCountCreateRequest request

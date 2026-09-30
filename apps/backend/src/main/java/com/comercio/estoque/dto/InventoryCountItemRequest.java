@@ -14,9 +14,10 @@ public record InventoryCountItemRequest(
                 value = "0.000",
                 message = "A quantidade contada não pode ser negativa"
         )
+        @jakarta.validation.constraints.Digits(integer=11, fraction=3)
         BigDecimal countedQuantity,
 
-        String notes
+        @jakarta.validation.constraints.Size(max=4000) String notes
 
 ) {
 }

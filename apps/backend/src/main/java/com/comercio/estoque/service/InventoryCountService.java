@@ -27,17 +27,20 @@ import java.util.Set;
 @Service
 public class InventoryCountService {
 
+    private final com.comercio.estoque.operation.AccessService access;
     private final InventoryCountRepository inventoryCountRepository;
     private final InventoryCountItemRepository inventoryCountItemRepository;
     private final ProductRepository productRepository;
     private final StockItemRepository stockItemRepository;
 
     public InventoryCountService(
+            com.comercio.estoque.operation.AccessService access,
             InventoryCountRepository inventoryCountRepository,
             InventoryCountItemRepository inventoryCountItemRepository,
             ProductRepository productRepository,
             StockItemRepository stockItemRepository
     ) {
+        this.access = access;
         this.inventoryCountRepository = inventoryCountRepository;
         this.inventoryCountItemRepository = inventoryCountItemRepository;
         this.productRepository = productRepository;
@@ -48,9 +51,13 @@ public class InventoryCountService {
     public InventoryCountResponse create(
             InventoryCountCreateRequest request
     ) {
+        access.requireAdmin();
+        access.validateOperator(request.assignedUserId());
         validateDuplicatedProducts(request.productIds());
 
         InventoryCount inventoryCount = new InventoryCount();
+        inventoryCount.setAssignedUserId(request.assignedUserId());
+        inventoryCount.setCreatedByUserId(access.id());
 
         for (Long productId : request.productIds()) {
 
@@ -77,7 +84,7 @@ public class InventoryCountService {
     @Transactional(readOnly = true)
     public List<InventoryCountResponse> findAll() {
 
-        return inventoryCountRepository.findAll()
+        return (access.admin() ? inventoryCountRepository.findAll() : inventoryCountRepository.findByAssignedUserId(access.id()))
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -99,7 +106,7 @@ public class InventoryCountService {
             InventoryCountItemRequest request
     ) {
         InventoryCount inventoryCount =
-                findInventoryById(inventoryCountId);
+                findInventoryForUpdate(inventoryCountId);
 
         validateInventoryCanBeChanged(inventoryCount);
 
@@ -150,7 +157,7 @@ public class InventoryCountService {
             Long inventoryCountId
     ) {
         InventoryCount inventoryCount =
-                findInventoryById(inventoryCountId);
+                findInventoryForUpdate(inventoryCountId);
 
         validateInventoryCanBeChanged(inventoryCount);
 
@@ -179,6 +186,16 @@ public class InventoryCountService {
                 inventoryCountRepository.save(inventoryCount);
 
         return toResponse(savedInventoryCount);
+    }
+
+    @Transactional
+    public InventoryCountResponse assign(Long id, Long operatorId) {
+        access.requireAdmin();
+        access.validateOperator(operatorId);
+        InventoryCount count = findInventoryForUpdate(id);
+        validateInventoryCanBeChanged(count);
+        count.setAssignedUserId(operatorId);
+        return toResponse(inventoryCountRepository.save(count));
     }
 
     private void validateDuplicatedProducts(
@@ -221,7 +238,7 @@ public class InventoryCountService {
     private InventoryCount findInventoryById(
             Long inventoryCountId
     ) {
-        return inventoryCountRepository
+        InventoryCount count = inventoryCountRepository
                 .findById(inventoryCountId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -230,6 +247,15 @@ public class InventoryCountService {
                                         + " não encontrada"
                         )
                 );
+        access.checkOwner(count.getAssignedUserId());
+        return count;
+    }
+
+    private InventoryCount findInventoryForUpdate(Long id) {
+        InventoryCount count = inventoryCountRepository.findLockedById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Contagem não encontrada"));
+        access.checkOwner(count.getAssignedUserId());
+        return count;
     }
 
     private BigDecimal findCurrentStockQuantity(
@@ -252,6 +278,7 @@ public class InventoryCountService {
 
         return new InventoryCountResponse(
                 inventoryCount.getId(),
+                inventoryCount.getAssignedUserId(),
                 inventoryCount.getStatus(),
                 inventoryCount.getStartedAt(),
                 inventoryCount.getFinishedAt(),

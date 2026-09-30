@@ -14,6 +14,16 @@ public class InventoryCount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "created_by_user_id")
+    private Long createdByUserId;
+    public void setCreatedByUserId(Long id) { this.createdByUserId = id; }
+
+    @Column(name = "assigned_user_id")
+    private Long assignedUserId;
+
+    public Long getAssignedUserId() { return assignedUserId; }
+    public void setAssignedUserId(Long id) { this.assignedUserId = id; }
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
     private InventoryCountStatus status = InventoryCountStatus.OPEN;

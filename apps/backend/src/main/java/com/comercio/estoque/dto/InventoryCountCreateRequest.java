@@ -9,7 +9,9 @@ public record InventoryCountCreateRequest(
         @NotEmpty(
                 message = "Informe pelo menos um produto para a contagem"
         )
-        List<Long> productIds
+        @jakarta.validation.constraints.Size(max=5000)
+        List<@jakarta.validation.constraints.NotNull Long> productIds,
+        @jakarta.validation.constraints.NotNull Long assignedUserId
 
 ) {
 }

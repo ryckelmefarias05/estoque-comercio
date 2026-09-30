@@ -12,6 +12,15 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleDenied(Exception e) {
+        return ResponseEntity.status(403).body(Map.of("message", "Você não tem permissão para este recurso"));
+    }
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleConflict(Exception e) {
+        return ResponseEntity.status(409).body(Map.of("message", "Conflito de cadastro. Confira os identificadores e atualize a lista antes de tentar novamente."));
+    }
+
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleResourceNotFound(

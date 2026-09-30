@@ -8,6 +8,7 @@ import java.util.List;
 public record InventoryCountResponse(
 
         Long id,
+        Long assignedUserId,
         InventoryCountStatus status,
         LocalDateTime startedAt,
         LocalDateTime finishedAt,
